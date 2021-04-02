@@ -1,3 +1,4 @@
+from randomstr import randomstr
 import requests
 
 
@@ -36,7 +37,7 @@ def add_queue(url):
         return resp
 
 
-def task(url, i, start, end):
+def task(file_name, url, i, start, end):
     session = requests.Session()
     s_header = {'range': 'bytes=' + str(start) + ' - ' + str(end)}
     session.headers.update(s_header)
@@ -46,16 +47,25 @@ def task(url, i, start, end):
         return a
     else:
         b = response.content
-        f = open('tempFile-{}'.format(str(i)), "w")
+        f = open('tmp_dir/tempFile_{}-{}.tmp'.format(file_name[:-4], str(i)), "w")
         f.write(str(b))
         f.close()
         response.close()
         session.close()
 
 
-def download(url, sections):
+def download(file_name, url, sections):
+    if str(file_name).strip() == '':
+        file_name = randomstr(length=10, charset='alphanumeric', readable=False, capitalization=False)
+        split = str.split(url, ".")
+        file_format = split[len(split)-1]
+        file_name = file_name + "." + file_format
+
+    file_format = url[-4:]
+    file_name = file_name + file_format
+
     for i in range(0, len(sections)):
-        a = task(url, i, sections[i][0], sections[i][1])
+        a = task(file_name, url, i, sections[i][0], sections[i][1])
         if a is not None:
             return a
 
