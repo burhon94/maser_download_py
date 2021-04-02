@@ -1,11 +1,10 @@
 import requests
 
-a = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
-
 
 def add_queue(url):
     total_sections = 10
     response = requests.head(url)
+    a = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
 
     if response.status_code > 299:
         resp = {
@@ -35,3 +34,29 @@ def add_queue(url):
             'error': ''
         }
         return resp
+
+
+def task(url, i, start, end):
+    session = requests.Session()
+    s_header = {'range': 'bytes=' + str(start) + ' - ' + str(end)}
+    session.headers.update(s_header)
+    response = session.get(url, headers=session.headers)
+    if response.status_code > 299:
+        a = ("Error: index: " + str(i) + " code: " + str(response.status_code))
+        return a
+    else:
+        b = response.content
+        f = open('tempFile-{}'.format(str(i)), "w")
+        f.write(str(b))
+        f.close()
+        response.close()
+        session.close()
+
+
+def download(url, sections):
+    for i in range(0, len(sections)):
+        a = task(url, i, sections[i][0], sections[i][1])
+        if a is not None:
+            return a
+
+    return 200
