@@ -40,6 +40,8 @@ def add_queue(url):
 
 
 def task(file_name, url, i, start, end):
+    if not os.path.exists('tmp_dir'):
+        os.mkdir('tmp_dir', mode=0o777)
     session = requests.Session()
     s_header = {'range': 'bytes=' + str(start) + ' - ' + str(end)}
     session.headers.update(s_header)
@@ -118,6 +120,15 @@ def merge(file_name):
             full_file.write(byte)
 
         read_file.close()
+        os.remove(f_n)
 
     full_file.close()
+    remove_tmp_dir()
     return found_files
+
+
+def remove_tmp_dir():
+    files = os.listdir('tmp_dir')
+
+    if len(files) == 0:
+        os.rmdir('tmp_dir')
