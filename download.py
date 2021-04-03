@@ -1,5 +1,7 @@
-from randomstr import randomstr
+import os
 import requests
+
+from randomstr import randomstr
 
 
 def add_queue(url):
