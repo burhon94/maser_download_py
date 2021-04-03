@@ -33,14 +33,20 @@ class DownloadApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # self.lineEdit.clear()
         a = download.download(file_name, url, resp['payload'])
+        if a['code'] != 200:
+            self.textBrowser.append(str(a))
+        else:
+            merge = download.merge(a['file_name'])
+            self.textBrowser.append('')
+            self.textBrowser.append('files: ' + str(merge))
 
-        end = time.time()
-        d, h, m, s = stopWatch(end - start)
+            end = time.time()
+            d, h, m, s = stopWatch(end - start)
 
-        self.textBrowser.append('days: ' + str(d) + ' hours: ' + str(h) +
-                                ' minute: ' + str(m) + ' second: ' + str(s))
-        self.textBrowser.append('')
-        self.textBrowser.append(str(a))
+            self.textBrowser.append('days: ' + str(d) + ' hours: ' + str(h) +
+                                    ' minute: ' + str(m) + ' second: ' + str(s))
+            self.textBrowser.append('')
+            self.textBrowser.append(str(a))
 
 
 app = QtWidgets.QApplication([])

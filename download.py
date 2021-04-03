@@ -43,30 +43,79 @@ def task(file_name, url, i, start, end):
     session.headers.update(s_header)
     response = session.get(url, headers=session.headers)
     if response.status_code > 299:
-        a = ("Error: index: " + str(i) + " code: " + str(response.status_code))
-        return a
+        resp = {
+            'index': i,
+            'code': response.status_code
+        }
+        return resp
     else:
         b = response.content
-        f = open('tmp_dir/tempFile_{}-{}.tmp'.format(file_name[:-4], str(i)), "w")
-        f.write(str(b))
+        f = open('tmp_dir/tempFile_{}-{}.tmp'.format(file_name[:-4], str(i)), "wb")
+        f.write(b)
         f.close()
         response.close()
         session.close()
+
+
+def do_download(file_name, url, sections):
+    resp = {}
+    for i in range(0, len(sections)):
+        resp = task(file_name, url, i, sections[i][0], sections[i][1])
+
+    return resp
 
 
 def download(file_name, url, sections):
     if str(file_name).strip() == '':
         file_name = randomstr(length=10, charset='alphanumeric', readable=False, capitalization=False)
         split = str.split(url, ".")
-        file_format = split[len(split)-1]
+        file_format = split[len(split) - 1]
         file_name = file_name + "." + file_format
+        resp = do_download(file_name, url, sections)
+        if resp is not None:
+            resp = {'code': 500}
+            return resp
 
-    file_format = url[-4:]
-    file_name = file_name + file_format
+        else:
+            resp = {'code': 200, 'file_name': file_name}
+        return resp
 
-    for i in range(0, len(sections)):
-        a = task(file_name, url, i, sections[i][0], sections[i][1])
-        if a is not None:
-            return a
+    else:
+        file_format = url[-4:]
+        file_name = file_name + file_format
+        resp = do_download(file_name, url, sections)
+        if resp is not None:
+            resp = {'code': 500}
+            return resp
 
-    return 200
+        else:
+            resp = {'code': 200, 'file_name': file_name}
+        return resp
+
+
+def merge(file_name):
+    found_files = []
+    files = os.listdir('tmp_dir')
+
+    for index in range(0, len(files)):
+        file_part = files[index]
+        f = str(file_name[:-4])
+        if str.find(file_part, f) != -1:
+            found_files.append(file_part)
+            continue
+        else:
+            continue
+
+    found_files.sort()
+    full_file = open(file_name, 'wb')
+    for index in range(0, len(found_files)):
+        file_part = found_files[index]
+        f_n = str('tmp_dir/{}').format(str(file_part))
+        read_file = open(f_n, 'rb')
+        while byte := read_file.read(1):
+            full_file.write(byte)
+
+        read_file.close()
+
+    full_file.close()
+    return found_files
